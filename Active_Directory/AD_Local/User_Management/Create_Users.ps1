@@ -42,7 +42,7 @@ Import-Module ActiveDirectory
 
 # Function to generate a random password
 function Generate-RandomPassword {
-    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?'
+    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?@'
     $passwordLength = 16
     $random = New-Object System.Random
     $password = -join (1..$passwordLength | ForEach-Object { $chars[$random.Next($chars.Length)] })
@@ -125,12 +125,12 @@ $path_new_users_exchange = Join-Path -Path $currentDirectory -ChildPath "new_use
 $path = Join-Path -Path $currentDirectory -ChildPath "new_users.csv"
 
 # Clear content of output files if user confirms
-$choix_rename = Read-Host "Voulez-vous écraser le fichier <new_users.csv> (o/autre)"
+$choix_rename = Read-Host "Voulez-vous ï¿½craser le fichier <new_users.csv> (o/autre)"
 if ($choix_rename -eq 'o') {
     Clear-Content -Path $path
 }
 
-$choix_rename = Read-Host "Voulez-vous écraser le fichier <new_users_exchange.csv> (o/autre)"
+$choix_rename = Read-Host "Voulez-vous ï¿½craser le fichier <new_users_exchange.csv> (o/autre)"
 if ($choix_rename -eq 'o') {
     Clear-Content -Path $path_new_users_exchange
 }
@@ -221,7 +221,7 @@ foreach ($user in $users) {
         $ticketMessage = @"
 Bonjour,
 
-Voici les informations pour le nouvel utilisateur créé :
+Voici les informations pour le nouvel utilisateur crï¿½ï¿½ :
 
 Nom complet : $displayName
 Nom d'utilisateur (SamAccountName) : $SamAccountName
