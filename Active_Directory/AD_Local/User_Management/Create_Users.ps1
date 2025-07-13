@@ -44,7 +44,7 @@ Import-Module ActiveDirectory
 
 # Function to generate a random password
 function Generate-RandomPassword {
-    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?@'
+    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?@_'
     $passwordLength = 16
     $random = New-Object System.Random
     $password = -join (1..$passwordLength | ForEach-Object { $chars[$random.Next($chars.Length)] })
