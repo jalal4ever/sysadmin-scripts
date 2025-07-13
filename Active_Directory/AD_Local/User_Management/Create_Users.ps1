@@ -9,6 +9,29 @@
     Created: 2023-10-13
     Author: JEL for Entis Mutuelles
 
+.PREREQUISITES
+    - PowerShell 5.1 or later.
+    - Active Directory module for PowerShell must be installed and available.
+    - The script must be run with sufficient permissions to create users in Active Directory.
+    - CSV files must be prepared and placed in the correct directories:
+        - A CSV file named "Nouvel arrivant*.csv" containing user data must be present in the script's root directory.
+        - A CSV file named "Adresse_Agences.csv" containing agency addresses must be present in the "Data" subdirectory.
+        - A CSV file named "Groupe_service.csv" containing service groups must be present in the "Data" subdirectory.
+
+.INPUTS
+    - "Nouvel arrivant*.csv": Contains user information such as first name, last name, location, etc.
+    - "Adresse_Agences.csv": Contains agency details like OU, phone, address, etc.
+    - "Groupe_service.csv": Contains service group details.
+
+.OUTPUTS
+    - Logs: The script generates log files in a "Logs" directory located in the root directory where the script is executed.
+        - Log files are named with the current date in the format "yyyyMMdd_execution_script_result.txt".
+        - These logs contain details about the script execution, including attempts to create users, successes, and errors.
+    - Processed User File: A file named with the current date in the format "yyyyMMdd_processed_created_users.txt" is generated in the "Logs" directory.
+        - This file contains the processed user data.
+    - Support Ticket Message: A formatted message is generated for each user created, which can be copied and pasted directly into a support ticket.
+        - This message includes the user's full name, username (SamAccountName), email address, and password.
+
 .NOTES
     Future Improvements:
     - Generate a ready-to-share message with user credentials for easy communication.
@@ -19,7 +42,7 @@ Import-Module ActiveDirectory
 
 # Function to generate a random password
 function Generate-RandomPassword {
-    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?@'
+    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?'
     $passwordLength = 16
     $random = New-Object System.Random
     $password = -join (1..$passwordLength | ForEach-Object { $chars[$random.Next($chars.Length)] })
@@ -86,18 +109,20 @@ function Test-FilePath {
     return $true
 }
 
-# Main script execution
-$baseDirectory = "C:\Dev\PowershellScripts-Dev\01-New_user_AD_csv"
-$logDirectory = Join-Path -Path $baseDirectory -ChildPath "Logs"
-$dataDirectory = Join-Path -Path $baseDirectory -ChildPath "Data"
+# Get the current directory where the script is executed
+$currentDirectory = Get-Location
+
+# Define paths relative to the current directory
+$logDirectory = Join-Path -Path $currentDirectory -ChildPath "Logs"
+$dataDirectory = Join-Path -Path $currentDirectory -ChildPath "Data"
 
 # Ensure Logs directory exists
 if (-not (Test-Path -Path $logDirectory)) {
     New-Item -ItemType Directory -Path $logDirectory | Out-Null
 }
 
-$path_new_users_exchange = Join-Path -Path $baseDirectory -ChildPath "new_users_exchange.csv"
-$path = Join-Path -Path $baseDirectory -ChildPath "new_users.csv"
+$path_new_users_exchange = Join-Path -Path $currentDirectory -ChildPath "new_users_exchange.csv"
+$path = Join-Path -Path $currentDirectory -ChildPath "new_users.csv"
 
 # Clear content of output files if user confirms
 $choix_rename = Read-Host "Voulez-vous écraser le fichier <new_users.csv> (o/autre)"
@@ -111,7 +136,7 @@ if ($choix_rename -eq 'o') {
 }
 
 # Rename the input file
-$inputFile = Get-ChildItem -Path "$baseDirectory\Nouvel arrivant*.csv" | Select-Object -First 1
+$inputFile = Get-ChildItem -Path "$currentDirectory\Nouvel arrivant*.csv" | Select-Object -First 1
 if ($inputFile) {
     $newInputFileName = "$(Get-Date -Format 'yyyyMMdd')_processed_created_users.txt"
     $newInputFilePath = Join-Path -Path $logDirectory -ChildPath $newInputFileName
