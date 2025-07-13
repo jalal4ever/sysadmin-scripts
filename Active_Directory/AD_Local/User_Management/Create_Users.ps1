@@ -5,17 +5,26 @@
 .DESCRIPTION
     This script automates the creation of user accounts in Active Directory based on data provided in a CSV file.
     It includes functionality to clean and format user data, validate essential fields, and log the creation process.
-    Version: 1.0
+    Version: 1.1
     Created: 2023-10-13
     Author: JEL for Entis Mutuelles
 
 .NOTES
     Future Improvements:
-    - Randomize the default password for each user.
     - Generate a ready-to-share message with user credentials for easy communication.
+    - The default password is now randomized to 16 characters for each user.
 #>
 
 Import-Module ActiveDirectory
+
+# Function to generate a random password
+function Generate-RandomPassword {
+    $chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789-!?@'
+    $passwordLength = 16
+    $random = New-Object System.Random
+    $password = -join (1..$passwordLength | ForEach-Object { $chars[$random.Next($chars.Length)] })
+    return $password
+}
 
 # Function to clean strings by removing special characters
 function Clean-String {
@@ -171,7 +180,7 @@ foreach ($user in $users) {
         continue
     }
 
-    $pass = "Bonjour74!Bonjour74!"
+    $pass = Generate-RandomPassword
     $SamAccountName = "$($nom.Substring(0, [Math]::Min(15, $nom.Length)))$($prenom.Substring(0, 1))".ToLower()
     $displayName = "$prenom $nom"
     $mail = "$($prenom.Substring(0, 1)).$nom@$($Structure.TrimStart('@'))".ToLower()
@@ -182,6 +191,23 @@ foreach ($user in $users) {
 
         $logMessage = "Successfully created user: $displayName in OU: $OU`n"
         $logMessage | Out-File -FilePath $logFilePath -Append
+
+        # Generate a message for the support ticket
+        $ticketMessage = @"
+Bonjour,
+
+Voici les informations pour le nouvel utilisateur créé :
+
+Nom complet : $displayName
+Nom d'utilisateur (SamAccountName) : $SamAccountName
+Adresse e-mail : $mail
+Mot de passe : $pass
+
+Cordialement,
+"@
+
+        Write-Host "Message pour le ticket de support :"
+        Write-Host $ticketMessage
     }
     catch {
         $logMessage = "Error creating user $displayName: $($_.Exception.Message)`n"
