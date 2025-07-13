@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 <#
 .SYNOPSIS
     Script for creating Active Directory users from a CSV file.
